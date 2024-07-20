@@ -2,8 +2,8 @@
 ## 1C - 2024
 
 ## Integrantes:
-• Berro, Camila Andrea
-• Capomolla, Luciano Fabio
+- Berro, Camila Andrea
+- Capomolla, Luciano Fabio
 
 ## Introducción
 El presente código representa una simulación de un control de iluminación inteligente para una habitación de un hogar.

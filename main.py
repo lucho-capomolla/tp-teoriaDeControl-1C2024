@@ -11,7 +11,7 @@ while True:
         print("2. Media (entre 300 y 600 Luxes)")
         print("3. Alta (entre 600 y 900 Luxes)")
         print("4. Muy alta (entre 900 y 1200 Luxes)")
-        print("4. Máximo (entre 1200 y 1500 Luxes)")
+        print("5. Máximo (entre 1200 y 1500 Luxes)")
         nivel_intensidad = int(input("Nivel de intensidad lumínica deseado: "))
         while (nivel_intensidad < 1 or nivel_intensidad > 5):
           nivel_intensidad = int(input("Ingrese nuevamente el nivel de intensidad lumínica deseado: "))
@@ -97,7 +97,7 @@ def obtenerPerturbacion():
     else:
       print("Perturbación de TELEVISOR APAGADO")
       televisor_on = False
-      perturbacion = -300  # Como el encendido de un televisor
+      perturbacion = -300  # Como el apagado de un televisor
   return perturbacion
 
 
@@ -107,6 +107,7 @@ for t in range(1, tiempo_total + 1):
     # Obtener la perturbación
     perturbacion = obtenerPerturbacion()
 
+    # Ocurre una perturbación
     if (perturbacion != 0):
       print(f"Perturbacion en: {t} segundo")
 
@@ -124,7 +125,7 @@ for t in range(1, tiempo_total + 1):
       tiempos.append(t)
       tiempos_perturbacion.append(t)
 
-
+    # Controlador
     if (iluminacion_actual < umbral_minimo):
       error = umbral_minimo - iluminacion_actual
     elif (iluminacion_actual > umbral_maximo):
@@ -135,14 +136,10 @@ for t in range(1, tiempo_total + 1):
     if tiempo_previo is None:
         control_derivativo = 0
     else:
-        #dt = t - tiempo_previo
         control_derivativo = (error - error_previo) / time_step
 
     # Salida del Controlador PD
     senal_control = Kp * error + Kd * control_derivativo
-
-    # Limitar la cantidad máxima de enfriamiento
-    #senal_control = min(senal_control, 1500)
 
     iluminacion_actual += senal_control * time_step
     iluminacion_actual = max(iluminacion_actual, 0)
@@ -173,17 +170,7 @@ data_perturbacion = pd.DataFrame({
     'Nivel de Iluminación Corregida (Lux)': niveles_iluminacion_perturbacion_corregida,
 })
 
-# Análisis de los resultados
-print("Tiempo total de la simulación: {} segundos".format(tiempo_total))
-print("Itensidad lumínica final de la habitación: {:.2f} Lux".format(niveles_iluminacion[-1]))
-print("Umbral mínimo de intensidad lumínica deseada a partir de {} Lux".format(umbral_minimo))
-print("Umbral máximo de intensidad lumínica deseada hasta {} Lux".format(umbral_maximo))
-
-print("\nResumen de perturbaciones:")
-print(data_perturbacion.to_string())
-
-
-# Graficando los resultados
+# Graficamos los resultados
 plt.figure(figsize=(20, 10))
 
 plt.subplot(2, 1, 1)
@@ -197,3 +184,13 @@ plt.legend()
 
 plt.tight_layout()
 plt.show()
+
+
+# Análisis de los resultados
+print("Tiempo total de la simulación: {} segundos".format(tiempo_total))
+print("Itensidad lumínica final de la habitación: {:.2f} Lux".format(niveles_iluminacion[-1]))
+print("Umbral mínimo de intensidad lumínica deseada a partir de {} Lux".format(umbral_minimo))
+print("Umbral máximo de intensidad lumínica deseada hasta {} Lux".format(umbral_maximo))
+
+print("\nResumen de perturbaciones:")
+print(data_perturbacion.to_string())
