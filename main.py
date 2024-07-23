@@ -23,29 +23,35 @@ while True:
 # Nivel de intensidad lumínica Baja
 if(nivel_intensidad == 1):
   umbral_maximo = 300
+  valor_nominal = 200
   umbral_minimo = 100
 
 # Nivel de intensidad lumínica Media
 elif (nivel_intensidad == 2):
   umbral_maximo = 600
+  valor_nominal = 450
   umbral_minimo = 300
 
 # Nivel de intensidad lumínica Alta
 elif (nivel_intensidad == 3):
   umbral_maximo = 900
+  valor_nominal = 750
   umbral_minimo = 600
 
 # Nivel de intensidad lumínica Muy Alta
 elif (nivel_intensidad == 4):
   umbral_maximo = 1200
+  valor_nominal = 1050
   umbral_minimo = 900
 
 # Nivel de intensidad lumínica Máximo
 elif (nivel_intensidad == 5):
   umbral_maximo = 1500
+  valor_nominal = 1350
   umbral_minimo = 1200
 
 print(f"Nivel de intensidad lumínica elegido:  {nivel_intensidad}")
+print(f"Valor nominal: {valor_nominal}")
 print(f"Umbral máximo: {umbral_maximo}")
 print(f"Umbral mínimo: {umbral_minimo}")
 print("#################################################\n\n")
@@ -58,7 +64,8 @@ time_step = 1
 
 # Coeficientes del Controlador PD
 Kp = 1.75
-Kd = 0.05
+Kd = 0.02
+
 
 # Inicialización de variables
 iluminacion_actual = iluminación_inicial
@@ -70,6 +77,8 @@ tiempo_previo = None
 niveles_iluminacion = [iluminacion_actual]
 tiempos = [0]
 televisor_on = False
+lampara_on = False
+celular_on = False
 
 # Tablero de Perturbaciones
 niveles_iluminacion_perturbacion_antes = []
@@ -82,22 +91,39 @@ def obtenerPerturbacion():
   probabilidad = random.random()
   perturbacion = 0
   global televisor_on
+  global lampara_on
+  global celular_on
 
-  if (probabilidad < 0.01):
+  if (probabilidad < 0.005):
     print("Perturbación de NUBE")
     perturbacion = -400 # Como el paso de una nube ocultando la luminosidad exterior
-  elif (probabilidad < 0.02):
-    print("Perturbación de ENCENDIDO DE LÁMPARA")
-    perturbacion = 600  # Como el encendido de una lámpara de forma manual
-  elif (probabilidad < 0.05):
+  elif (probabilidad < 0.01):
+    if not lampara_on:
+      print("Perturbación de ENCENDIDO DE LÁMPARA")
+      lampara_on = True
+      perturbacion = 600  # Como el encendido de una lámpara de forma manual
+    else:
+      print("Perturbación de APAGADO DE LÁMPARA")
+      lampara_on = False
+      perturbacion = -600  # Como el apagado de una lámpara de forma manual
+  elif (probabilidad < 0.025):
     if not televisor_on:
-      print("Perturbación de TELEVISOR ENCENDIDO")
+      print("Perturbación de ENCENDIDO DE TELEVISOR")
       televisor_on = True
       perturbacion = 300  # Como el encendido de un televisor
     else:
-      print("Perturbación de TELEVISOR APAGADO")
+      print("Perturbación de APAGADO DE TELEVISOR")
       televisor_on = False
       perturbacion = -300  # Como el apagado de un televisor
+  elif (probabilidad < 0.04):
+    if not celular_on:
+      print("Perturbación de ENCENDIDO DE VELA")
+      celular_on = True
+      perturbacion = 50
+    else:
+      print("Perturbación de APAGADO DE VELA")
+      celular_on = False
+      perturbacion = -50
   return perturbacion
 
 
@@ -126,12 +152,16 @@ for t in range(1, tiempo_total + 1):
       tiempos_perturbacion.append(t)
 
     # Controlador
+
+
     if (iluminacion_actual < umbral_minimo):
       error = umbral_minimo - iluminacion_actual
     elif (iluminacion_actual > umbral_maximo):
       error = umbral_maximo - iluminacion_actual
     else:
       error = 0
+
+
 
     if tiempo_previo is None:
         control_derivativo = 0
@@ -174,7 +204,9 @@ data_perturbacion = pd.DataFrame({
 plt.figure(figsize=(20, 10))
 
 plt.subplot(2, 1, 1)
+plt.xticks(range(0, 301, 10))
 plt.plot(data['Tiempo (segs)'], data['Nivel de Iluminación (Lux)'], label='Nivel de luminosidad (LUX)')
+plt.axhline(valor_nominal, color='b', linestyle='--', label='Valor Nominal')
 plt.axhline(umbral_minimo, color='r', linestyle='--', label='Umbral Minimo')
 plt.axhline(umbral_maximo, color='r', linestyle='--', label='Umbral Maximo')
 plt.xlabel('Tiempo (segs)')
